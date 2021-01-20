@@ -1,0 +1,332 @@
+--Build Org Workbook----
+
+--Count how many lists each guy is on--
+
+select distinct count(*) as HypeCount, min(industryhyperank) as TopRank,
+max(industryhyperank) as BottomRank, piratesid
+into #X
+from industryhype
+where year = 2020
+and IndustryHypeTypeCode in (
+'BBAMidS',
+'BBAOrg',
+'BBAOrg10',
+'BBAOverall',
+'BBP',
+'BBP101',
+'FG100',
+'FGOrg',
+'JS150',
+'KL100',
+'KLOrg',
+'KMCD100',
+'MLB100'
+)
+group by piratesid
+
+--------------------
+select distinct b.piratesid, b.adjprod
+into #HighH
+from Batting b
+left join vqlplayer v on v.PiratesID = b.PiratesID
+where splittype = 'ADJ' and year = 2020
+and v.ActiveProPlayer = 1 and v.IsPitcher = 0 and --v.LevelOfPlayType in ('1A','2A','3A', 'ML')
+b.LevelOfPlayTypeCode = v.LevelOfPlayType
+--select distinct b.piratesid, b.adjprod
+--into #LowH
+--from Batting b
+--left join vqlplayer v on v.PiratesID = b.PiratesID
+--where splittype = 'Adj' and b.LevelOfPlayTypeCode = v.LevelOfPlayType and year = 2017 
+--and v.ActiveProPlayer = 1 and v.IsPitcher = 0 and v.LevelOfPlayType not in ('1A','2A', '3A', 'ML')
+--------------
+Select *
+into #QQ
+From #HighH
+--------------
+
+select distinct p.piratesid, p.TrajERA
+into #LowP
+from pitching p
+left join vqlplayer v on v.PiratesID = p.PiratesID
+where splittypecode = 'ADJ' and p.LevelOfPlayTypeCode = v.LevelOfPlayType and year = 2020 
+and v.ActiveProPlayer = 1 and v.IsPitcher = 1 --and v.LevelOfPlayType not in ('1A','2A', '3A', 'ML')
+and p.LevelOfPlayTypeCode = v.LevelOfPlayType
+
+--select distinct p.piratesid, p.TrajERA
+--into #HighP
+--from pitching p
+--left join vqlplayer v on v.PiratesID = p.PiratesID
+--where splittypecode = 'CIS' and year = 2017 
+--and v.ActiveProPlayer = 1 and v.IsPitcher = 1 --and v.LevelOfPlayType in ('1A','2A', '3A', 'ML')
+--and p.LevelOfPlayTypeCode = v.LevelOfPlayType
+
+select *
+into #PP
+from #LowP
+
+----------------------
+--Only Adding FG to show working order--
+---Get rankings 
+select i.piratesid,
+IndustryHypeRank as MLBOrg_Mid,
+IndustryHypeOrgCode 
+into #MLB
+from industryhype i
+where industryhypetypecode = 'FGOrg' and year = 2020 and i.EffectiveDate > '2019-09-01'
+order by IndustryHypeOrgCode, IndustryHypeRank
+
+--select i.piratesid,
+--IndustryHypeRank as MLBOrg_Pre,
+--IndustryHypeOrgCode 
+--into #MLBP
+--from industryhype i
+--where industryhypetypecode = 'MLBOrg' and year = 2018 and i.EffectiveDate < '2017-07-01'
+--order by IndustryHypeOrgCode, IndustryHypeRank
+
+--select i.piratesid,
+--IndustryHypeRank as BBAOrg_Mid,
+--IndustryHypeOrgCode 
+--into #BBA
+--from industryhype i
+--where industryhypetypecode = 'BBAMidS' and year = 2017 and i.EffectiveDate > '2017-07-01'
+--order by IndustryHypeOrgCode, IndustryHypeRank
+
+--select i.piratesid,
+--IndustryHypeRank as BBAOrg_Pre,
+--IndustryHypeOrgCode 
+--into #BBAP
+--from industryhype i
+--where industryhypetypecode = 'BBAOrg' and year = 2018 and i.EffectiveDate < '2017-07-01'
+--order by IndustryHypeOrgCode, IndustryHypeRank
+
+
+--select i.piratesid,
+--IndustryHypeRank as FGOrg,
+--IndustryHypeOrgCode 
+--into #FG
+--from industryhype i
+--where industryhypetypecode = 'FGOrg' and year = 2018
+--order by IndustryHypeOrgCode, IndustryHypeRank
+
+
+--select i.piratesid,
+--IndustryHypeRank as BBPOrg,
+--IndustryHypeOrgCode 
+--into #BP
+--from industryhype i
+--where industryhypetypecode = 'BBP' and year = 2018
+--order by IndustryHypeOrgCode, IndustryHypeRank
+
+
+--select i.piratesid,
+--IndustryHypeRank as JSOrg,
+--IndustryHypeOrgCode 
+--into #JS
+--from industryhype i
+--where industryhypetypecode = 'JSP' and year = 2018
+--order by IndustryHypeOrgCode, IndustryHypeRank
+
+--select i.piratesid,
+--IndustryHypeRank as BBAOverall_Mid,
+--IndustryHypeOrgCode 
+--into #B2
+--from industryhype i
+--where industryhypetypecode = 'BBAOverall' and year = 2018 and i.EffectiveDate > '2017-06-15'
+--order by IndustryHypeOrgCode, IndustryHypeRank
+
+--select i.piratesid,
+--IndustryHypeRank as BBAOverall_Pre,
+--IndustryHypeOrgCode 
+--into #B2P
+--from industryhype i
+--where industryhypetypecode = 'BBAOverall' and year = 2018 and i.EffectiveDate < '2017-06-15'
+--order by IndustryHypeOrgCode, IndustryHypeRank
+
+--select i.piratesid,
+--IndustryHypeRank as BBP101,
+--IndustryHypeOrgCode 
+--into #B3
+--from industryhype i
+--where industryhypetypecode = 'BBP101' and year = 2018
+--order by IndustryHypeOrgCode, IndustryHypeRank
+
+--select i.piratesid,
+--IndustryHypeRank as BBP50_Mid,
+--IndustryHypeOrgCode 
+--into #B0
+--from industryhype i
+--where industryhypetypecode = 'BP50' and year = 2018
+--order by IndustryHypeOrgCode, IndustryHypeRank
+
+--select i.piratesid,
+--IndustryHypeRank as FG100,
+--IndustryHypeOrgCode 
+--into #FG2
+--from industryhype i
+--where industryhypetypecode = 'FG100' and year = 2018
+--order by IndustryHypeOrgCode, IndustryHypeRank
+
+--select i.piratesid,
+--IndustryHypeRank as JS150,
+--IndustryHypeOrgCode 
+--into #JS2
+--from industryhype i
+--where industryhypetypecode = 'JS150' and year = 2018
+--order by IndustryHypeOrgCode, IndustryHypeRank
+
+--select i.piratesid,
+--IndustryHypeRank as Law100_Pre,
+--IndustryHypeOrgCode 
+--into #KL
+--from industryhype i
+--where industryhypetypecode = 'KL100' and year = 2018
+--order by IndustryHypeOrgCode, IndustryHypeRank
+
+--select i.piratesid,
+--IndustryHypeRank as Law50_Mid,
+--IndustryHypeOrgCode 
+--into #KL2
+--from industryhype i
+--	where industryhypetypecode = 'KL50' and year = 2018
+--order by IndustryHypeOrgCode, IndustryHypeRank
+
+--select i.piratesid,
+--IndustryHypeRank as MLB100_Mid,
+--IndustryHypeOrgCode 
+--into #ML2
+--from industryhype i
+--where industryhypetypecode = 'MLB100' and year = 2018 and i.EffectiveDate > '2017-06-01'
+--order by IndustryHypeOrgCode, IndustryHypeRank
+
+--select i.piratesid,
+--IndustryHypeRank as MLB100_Pre,
+--IndustryHypeOrgCode 
+--into #ML2P
+--from industryhype i
+--where industryhypetypecode = 'MLB100' and year = 2018 and i.EffectiveDate < '2017-06-01'
+--order by IndustryHypeOrgCode, IndustryHypeRank
+
+
+-------------------------------------------------
+--------------------------------------------------
+
+select distinct 
+v.name as NAME,
+v.org as ORG,
+v.Pos as POS,
+v.Bats as BATS,
+v.throws as THROWS,
+v.Age as AGE,
+vv.BirthCountryCode,
+v.level as LEVEL,
+vv.R4year as R4YR,
+vv.r4round as R4RD,
+vv.R4Pick as R4PICK,
+vv.amateursigningbonus as BONUS,
+vv.firstprocontractorgcode AS FIRST_ORG,
+vv.FirstProContractDate as SIGN_DATE,
+vv.R5FirstYearElig as R5YR,
+vv.IsPotentialMLFreeAgent As MiLB_FA,
+case
+	when v.is40 = 1 then 'Yes'
+	else 'No' end as Is40MAN,
+v.options as OPTIONS,
+v.MJServ As MLBServ,
+vv.HasPriorOutright As PriorOR,
+v.presentvalue as PV,
+v.FutureValue as FV,
+v.UpsideValue as UpSide,
+v.PresentValueObj as ObjPV,
+v.FutureValueObj as ObjFV,
+v.PresentValueSubj as SubjPV,
+v.FutureValueSubj as SubjFV,
+v.AssetValue,
+q.AdjProd As Hitter_AdjProd,
+YY.TrajERA,  
+IsNull(x.HypeCount, 0) As OrgListCount,
+x.toprank As HighestOrgRank,
+x.bottomrank As LowestOrgRank, 
+m.MLBOrg_Mid as MLBOrg_Mid,
+--m2.MlbOrg_Pre as MLBOrg_Pre, 
+--b.bbaorg_Mid as BBAOrg_MidTen,
+--b2.bbaorg_Pre as BBAOrg_Pre,
+--j.JSOrg as JSOrg,
+--f.fgorg as FGOrg,
+--p.bbporg as BBPOrg,
+--mm.mlb100_Mid as MLBOverall_Mid,
+--m3.mlb100_Pre as MLBOverall_Pre,
+--bb.bbaoverall_Mid as BBAOverall_Mid,
+--b3.bbaoverall_Pre as BBAOverall_Pre,
+--kl2.law50_mid as KLOverall_Mid,
+--kl.law100_Pre as KLOverall_Pre,
+--fg.fg100 as FGOverall,
+--bp2.BBP50_Mid as BBPOverall_Mid,
+--bp.bbp101 as BBPOverall_Pre,
+--js.js150 As JSOverall
+v.piratesid
+
+into #A
+
+from [P360].[Analysis].[vPlayerValuationPivot] v
+left join #MLB m on v.piratesid = m.piratesid
+--left join #BBA b on v.piratesid = b.PiratesID
+--left join #BP p on v.piratesid = p.PiratesID
+--left join #FG f on v.piratesid = f.PiratesID
+--left join #JS j on v.piratesid = j.PiratesID
+--left join #ML2 mm on v.PiratesID = mm.piratesid
+--left join #B2 bb on v.PiratesID = bb.piratesid
+--left join #kl kl on v.PiratesID = kl.PiratesID
+--left join #FG2 fg on v.PiratesID = fg.PiratesID
+--left join #B3 bp on v.PiratesID = bp.PiratesID
+--left join #JS2 js on v.PiratesID = js.PiratesID
+left join #X x on v.PiratesID = x.PiratesID
+left join vqlplayer vv on v.piratesid = vv.PiratesID
+left join #QQ q on v.piratesid = q.piratesid
+left join #PP YY on v.piratesid = yy.PiratesID
+--left join #MLBP m2 on v.piratesid = m2.PiratesID
+--left join #ML2P m3 on v.piratesid = m3.piratesID
+--left join #BBAP b2 on v.piratesid = b2.piratesid
+--left join #B2P b3 on v.piratesid = b3.PiratesID
+--left join #KL2 kl2 on v.piratesid = kl2.piratesid
+--left join #B0 bp2 on v.piratesid = bp2.piratesid
+--left join [P360].[Analysis].[vScoutingReportsColumns] p on v.piratesid = p.piratesid
+
+where  v.org is not null 
+
+
+--------------
+
+select *
+--into #test
+from #A
+
+Where org = 'PIT'
+
+order by org asc, name asc
+
+
+Drop Table #AA
+Select
+Case When POS in ('C', 'C2') then 'C'
+When POS like 'UT%' then 'UTL' 
+When POS like 'OF%' then 'OF'
+Else POS End As POS,
+
+Bonus,
+AssetValue
+into #AA
+From #A
+Where Org = 'PIT' 
+
+Select 
+POS,
+sum(Bonus) as TotalBonus,
+AVG(Bonus) as AVGBonus,
+sum(AssetValue) as TotalAsset,
+AVG(AssetValue) as AVGAsset
+
+From #AA
+
+Where Pos is not null and Pos <> 'Unknown'
+
+Group by POS
